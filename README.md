@@ -5,18 +5,21 @@ Plattform för friluftsdestinationer. Redaktionella guider, användarnas egna tu
 ## Kom igång
 
 ```bash
-npm install
-docker compose -f docker-compose.dev.yml up -d
-npm run seed
-npm start
+pnpm install
+pnpm db:up
+pnpm seed
+pnpm dev
 ```
 
 Appen ligger sen på http://localhost:3000 och API:et pa http://localhost:4000.
 
 ## Struktur
 
-- `api/` – Express + Postgres (Drizzle)
-- `web/` – React + Vite
+Pnpm-monorepo:
+
+- `apps/api` – Express + Postgres (Drizzle)
+- `apps/web` – React + Vite
+- `packages/` – delade paket (tomt idag, se `packages/README.md`)
 
 ## Deploy
 
