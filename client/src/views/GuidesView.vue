@@ -1,7 +1,7 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted } from 'vue'
 
-const guides = ref([]);
+const guides = ref([])
 
 const fetchGuides = async () => {
   try {
@@ -18,11 +18,13 @@ onMounted(() => {
   fetchGuides()
 })
 
+/*
 const search = () => {
   fetch(`http://localhost:4000/api/guides/search?q=${query}`)
     .then((r) => r.json())
-    .then(guides.value);
-};
+    .then(guides.value)
+}
+*/
 </script>
 
 <template>
@@ -38,7 +40,6 @@ const search = () => {
           <h3>{{ guide.title }}</h3>
         </li>
       </ul>
-
     </div>
   </div>
 </template>
