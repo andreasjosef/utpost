@@ -1,3 +1,5 @@
+# Mall för kunskapslogg
+
 ## Vecka 41 – NoSQL och containrar
 
 **Kursmål:** Fullstack 1 (NoSQL) · Cloud 4 (Docker)
