@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { RouterLink, useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
 
