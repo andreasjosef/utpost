@@ -34,7 +34,7 @@ flowchart LR
     direction TB
     subgraph Q [Quality]
       direction TB
-      Q1[npm ci] --> Q2[npm run lint] --> Q3[npm run format:check] --> Q4[npm test]
+      Q1[npm ci] --> Q2[npm run lint] --> Q3[npm run format:check] --> Q5[npm run typecheck] --> Q4[npm test]
     end
     subgraph BU [Build]
       direction TB
@@ -57,11 +57,12 @@ flowchart LR
 | Installera | Quality, Build | `npm ci` | Att `package-lock.json` inte stämmer med `package.json`, eller att ett beroende inte går att installera. Alla får exakt samma versioner som i lockfilen. |
 | Lint | Quality | `npm run lint` (ESLint) | Kodfel som inte syns förrän appen körs: odefinierade variabler, oanvända variabler och importer, trasiga Vue-templates (`eslint-plugin-vue`) och vanliga misstag i testfiler (`@vitest/eslint-plugin`). |
 | Format | Quality | `npm run format:check` (Prettier) | Kod som inte följer vår formatering (inga semikolon, enkla citattecken, max 100 tecken per rad). CI kör `--check`, inte `--write`. Den säger bara ja eller nej och ändrar ingen kod. |
+| Typkontroll | Quality | `npm run typecheck` (`vue-tsc` i `client/`, `tsc --noEmit` i `api/`) | Typfel mot API-kontraktet i `@utpost/shared`: fel fältnamn (`guide.lengthKm` istället för `length_km`), fält som kan vara `null` men används som om de alltid finns, och routes som svarar med något annat än sin `Response<...>`-typ. |
 | Test | Quality | `npm test` (Vitest) | Att testerna går igenom. Just nu finns bara ett röktest som visar att pipelinen faktiskt kör tester. Riktiga tester kommer i M2. |
 | Bygge | Build | `npm run build` (Vite) | Kod som inte går att bygga för produktion: importer som pekar på filer som inte finns, syntaxfel och komponenter som inte kompilerar. |
 | Artefakt | Build | `upload-artifact` | Fångar inga fel, men sparar det byggda `client/dist` så att man kan ladda ner och titta på exakt det som byggdes. |
 
-Alla steg körs just nu bara mot `client/`. `web/` och `api/` lintas, testas och byggs inte i CI än.
+Alla steg utom typkontrollen körs just nu bara mot `client/`. Typkontrollen täcker även `api/`. `web/` kontrolleras inte i CI.
 
 ## CI Tidsmätning
 
