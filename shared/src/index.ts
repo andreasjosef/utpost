@@ -43,6 +43,23 @@ export interface TourLog {
   note: string | null;
 }
 
+export interface Photo {
+  id: number;
+  tour_id: number;
+  filename: string;
+  width: number;
+  height: number;
+  created_at: string;
+}
+
+/** GET /api/tours – varje tur med användare, guide, bilder och loggar inbakade */
+export interface TourWithRelations extends Tour {
+  user?: User; // saknas om användaren raderats – inga foreign keys (Debt 10, #12)
+  guide: Guide | null;
+  photos: Photo[];
+  logs: TourLog[];
+}
+
 /** Fel från API */
 export interface ApiError {
   error: string;
