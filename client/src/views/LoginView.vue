@@ -28,7 +28,13 @@ async function submit() {
     <form @submit.prevent="submit" class="login-form">
       <div>
         <label for="email">E-post</label>
-        <input id="email" v-model="email" type="email" placeholder="jack.ripper@email.com" required />
+        <input
+          id="email"
+          v-model="email"
+          type="email"
+          placeholder="jack.ripper@email.com"
+          required
+        />
       </div>
       <div>
         <label for="password">Lösenord</label>
