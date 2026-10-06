@@ -60,6 +60,13 @@ export interface TourWithRelations extends Tour {
   logs: TourLog[];
 }
 
+/** POST /api/auth/login */
+export interface LoginResponse {
+  token: string;
+  // API:et skickar hela användarraden, även password_hash (Debt 5, #7). Typen tar bara med det vi använder.
+  user: User;
+}
+
 /** Fel från API */
 export interface ApiError {
   error: string;

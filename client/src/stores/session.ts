@@ -1,22 +1,24 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import type { ApiError, LoginResponse, User } from '@utpost/shared'
+import { post } from '@/api'
+
+const readStoredUser = (): User | null => {
+  const raw = localStorage.getItem('user')
+  // Vi skrev själva det här värdet vid login, så vi litar på formen.
+  return raw ? (JSON.parse(raw) as User) : null
+}
 
 export const useSessionStore = defineStore('session', () => {
-  const token = ref(localStorage.getItem('token') || null)
-  const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
+  const token = ref<string | null>(localStorage.getItem('token'))
+  const user = ref<User | null>(readStoredUser())
 
   const isAuthenticated = computed(() => Boolean(token.value && user.value))
 
-  async function login(email, password) {
-    const response = await fetch('http://localhost:4000/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
+  async function login(email: string, password: string): Promise<User> {
+    const data = await post<LoginResponse | ApiError>('/auth/login', { email, password })
 
-    const data = await response.json()
-
-    if (!response.ok || data.error) {
+    if ('error' in data) {
       throw new Error(data.error || 'Kunde inte logga in')
     }
 
