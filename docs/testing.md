@@ -43,7 +43,7 @@ Vi behövde bestämma vad som ska testas, på vilken nivå, och vad vi medvetet 
 | `ToursView` – tur utan användare (Debt 10, #12) | Komponent | Utan foreign keys kan `user` saknas. Vyn ska inte krascha. | Nej, planerat |
 | `LoginView` – fel lösenord | Komponent | Användaren ska se API:ets meddelande och stanna kvar på sidan. | Nej, planerat |
 | Höjdmetrar (`elevationGain`) | Enhet | Ren beräkning med känd bugg vid `null`-punkter. | Nej. Öppen fråga, se nedan |
-| API-routes (`api/src/routes/`) | API (M5) | Kräver databas. Svarsformen skyddas redan av `Response<T>` och typkontrollen. | Nej |
+| API-routes (`api/src/routes/`) | API (senare) | Kräver databas. Svarsformen skyddas redan av `Response<T>` och typkontrollen. | Nej |
 
 ## Regler
 
@@ -58,11 +58,12 @@ Vi behövde bestämma vad som ska testas, på vilken nivå, och vad vi medvetet 
 - **Vue, Pinia och Vue Router själva:** att `ref` uppdaterar eller att en store finns. Det testar ramverket, inte oss.
 - **Klassnamn, CSS och exakt markup:** testerna läser text och roller, så att en omstylning inte bryter dem.
 - **`web/` (React-appen):** den ersätts vy för vy av `client/`.
-- **API-routes mot databas:** kommer i senare (se *Nivåer*).
+- **API-routes mot databas:** kommer senare (se *Nivåer*).
 - **`App.vue`, `HomeView`, routerkonfigurationen:** ingen egen logik i dag.
 
 ## Alternativ vi jämförde
 
+- **Mockning: `vi.mock('@/api')` vs. stubbad `fetch` vs. MSW.** Stubbad `fetch` kräver att varje test bygger `Response`-objekt för hand. MSW är mest realistiskt men är ett nytt beroende och mer uppsättning än vi behöver nu. `vi.mock('@/api')` är kortast och typat. Priset är att `api.ts` inte körs i komponenttesterna, därför har den ett eget enhetstest.
 - **Täckningskrav (t.ex. 70 %) vs. inget krav vs. bara rapport.** Se *Regler*. Ett krav är lätt att mäta men lätt att uppfylla med tomma tester.
 - **Testfiler bredvid koden vs. en separat `tests/`-mapp.** Bredvid koden syns direkt vad som saknar test, och testerna följer med när filer flyttas.
 - **Vue Testing Library vs. `@vue/test-utils` direkt.** Test-utils ger åtkomst till komponentens interna state, vilket lockar till tester som går sönder vid refaktorering. Testing Library tvingar oss att testa det användaren ser.
