@@ -10,6 +10,7 @@
     "typecheck": "vue-tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@utpost/shared": "*",
     "cors": "^2.8.5",
     "drizzle-orm": "^0.36.4",
     "express": "^4.21.2",
