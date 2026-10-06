@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/stores/session'
@@ -16,7 +16,8 @@ async function submit() {
     await session.login(email.value, password.value)
     router.push('/')
   } catch (err) {
-    error.value = err.message
+    // Storen kastar Error med API:ets meddelande.
+    error.value = err instanceof Error ? err.message : 'Kunde inte logga in'
   }
 }
 </script>
@@ -49,16 +50,19 @@ async function submit() {
   max-width: 400px;
   margin: 2rem 0;
 }
+
 .login-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
+
 .login-form div {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
 }
+
 .error {
   color: #e53e3e;
 }
