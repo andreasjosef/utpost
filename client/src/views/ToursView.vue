@@ -1,18 +1,18 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
+import type { TourWithRelations } from '@utpost/shared'
+import { get } from '@/api'
 
-const tours = ref([])
+const tours = ref<TourWithRelations[]>([])
 const loading = ref(true)
 const error = ref('')
 
 onMounted(async () => {
   try {
-    const response = await fetch('http://localhost:4000/api/tours')
-    if (!response.ok) throw new Error('Kunde inte hämta turerna')
-    tours.value = await response.json()
-  } catch (err) {
-    error.value = err.message
+    tours.value = await get<TourWithRelations[]>('/tours')
+  } catch {
+    error.value = 'Kunde inte hämta turerna'
   } finally {
     loading.value = false
   }
