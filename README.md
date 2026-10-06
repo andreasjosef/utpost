@@ -28,6 +28,9 @@ committa och deploya ofta och Git Flow är väl lämplig för det. Vi avser dock
 
 ## Kom igång
 
+Kräver **Node 22.18 eller senare**. API:et är delvis skrivet i TypeScript och körs
+direkt av Node, som tar bort typerna själv (inget byggsteg). CI kör Node 24.
+
 ```bash
 npm install
 docker compose -f docker-compose.dev.yml up -d
@@ -44,12 +47,13 @@ och `npm run dev:client`.
 
 ## Kommandon
 
-Körs från roten. Alla fyra körs även i CI (se [`docs/pipeline.md`](docs/pipeline.md)).
+Körs från roten. Alla fem körs även i CI (se [`docs/pipeline.md`](docs/pipeline.md)).
 
 | Kommando | Gör |
 | --- | --- |
 | `npm run lint` | ESLint på `client/` |
 | `npm run format:check` | Prettier kollar formateringen i `client/src/` (ändrar inget) |
+| `npm run typecheck` | Typkontroll: `vue-tsc` i `client/` och `tsc --noEmit` i `api/` (ändrar inget) |
 | `npm test` | Vitest kör testerna i `client/` en gång och avslutar |
 | `npm run build` | Vite bygger `client/` till `client/dist` |
 
@@ -59,7 +63,8 @@ Formatera koden lokalt med `npm run format --workspace=client`.
 
 - `api/` – Express + Postgres (Drizzle)
 - `web/` – React + Vite (den gamla appen, vyerna portas över till `client/`)
-- `client/` – Vue 3 + Vue Router + Vite (den nya klienten)
+- `client/` – Vue 3 + Vue Router + Pinia + Vite (den nya klienten, TypeScript)
+- `shared/` – `@utpost/shared`, API-kontraktet: typerna för det som går mellan `api/` och `client/`. Ren TypeScript, inget bygge. Ändras ett API-svar ändras typen här i samma PR.
 
 ## Deploy
 
