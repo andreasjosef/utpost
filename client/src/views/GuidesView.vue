@@ -1,20 +1,20 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
+import type { Guide } from '@utpost/shared'
+import { get } from '@/api'
 
-const allGuides = ref([])
-const guides = ref([])
+const allGuides = ref<Guide[]>([])
+const guides = ref<Guide[]>([])
 const query = ref('')
 const error = ref('')
 
 onMounted(async () => {
   try {
-    const response = await fetch('http://localhost:4000/api/guides')
-    if (!response.ok) throw new Error('Kunde inte hämta guiderna')
-    allGuides.value = await response.json()
+    allGuides.value = await get<Guide[]>('/guides')
     guides.value = allGuides.value
-  } catch (err) {
-    error.value = err.message
+  } catch {
+    error.value = 'Kunde inte hämta guiderna'
   }
 })
 
