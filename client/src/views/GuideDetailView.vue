@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import type { Guide } from '@utpost/shared'
+import DOMPurify from 'dompurify'
 import { get } from '@/api'
 
 const route = useRoute()
@@ -34,6 +35,6 @@ watch(
   <article v-else class="guide">
     <h1>{{ guide.title }}</h1>
     <p class="muted">{{ guide.region }} · {{ guide.difficulty }} · {{ guide.length_km }} km</p>
-    <div v-html="guide.body_html" />
+    <div v-html="DOMPurify.sanitize(guide.body_html)" />
   </article>
 </template>
