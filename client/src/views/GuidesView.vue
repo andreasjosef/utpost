@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import type { Guide } from '@utpost/shared'
+import DOMPurify from 'dompurify'
 import { get } from '@/api'
 
 const allGuides = ref<Guide[]>([])
@@ -42,7 +43,7 @@ const search = () => {
         <p class="muted">{{ guide.region }} · {{ guide.difficulty }} · {{ guide.length_km }} km</p>
         <!-- I would like to actually construct this from an object. Ie on server sanitize html then
 parse and store as object and here reconstruct html from that -->
-        <div class="excerpt" v-html="guide.body_html.slice(0, 180)" />
+        <div class="excerpt" v-html="DOMPurify.sanitize(guide.body_html.slice(0, 180))" />
       </div>
     </div>
   </div>
