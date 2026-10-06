@@ -1,24 +1,31 @@
-<script setup>
+<script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import type { Guide } from '@utpost/shared'
+import { get } from '@/api'
 
 const route = useRoute()
-const guide = ref(null)
+const guide = ref<Guide | null>(null)
 const error = ref('')
 
-const fetchGuide = async (slug) => {
+const fetchGuide = async (slug: string) => {
   guide.value = null
   error.value = ''
   try {
-    const response = await fetch(`http://localhost:4000/api/guides/${slug}`)
-    if (!response.ok) throw new Error('Kunde inte hämta guiden')
-    guide.value = await response.json()
-  } catch (err) {
-    error.value = err.message
+    guide.value = await get<Guide>(`/guides/${slug}`)
+  } catch {
+    error.value = 'Kunde inte hämta guiden'
   }
 }
 
-watch(() => route.params.slug, fetchGuide, { immediate: true })
+// Route-parametrar är string | string[]. /guider/:slug ger alltid en string.
+watch(
+  () => route.params.slug,
+  (slug) => {
+    if (typeof slug === 'string') fetchGuide(slug)
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
