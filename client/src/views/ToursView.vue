@@ -22,6 +22,7 @@ onMounted(async () => {
 <template>
   <p v-if="loading">Laddar turer...</p>
   <p v-else-if="error">{{ error }}</p>
+  <p v-else-if="tours.length === 0">Inga turer än</p>
   <div v-else>
     <h1>Turer</h1>
     <table class="tours">

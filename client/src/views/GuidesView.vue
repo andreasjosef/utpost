@@ -35,7 +35,8 @@ const search = () => {
       <button class="btn-primary" @click="search">Sök</button>
     </div>
     <p v-if="error">{{ error }}</p>
-    <div class="grid">
+    <p v-else-if="guides.length === 0">Inga guider hittades</p>
+    <div v-else class="grid">
       <div v-for="guide in guides" :key="guide.id" class="card">
         <h3>
           <RouterLink :to="`/guider/${guide.slug}`">{{ guide.title }}</RouterLink>
