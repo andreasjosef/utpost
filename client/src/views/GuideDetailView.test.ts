@@ -5,7 +5,6 @@ import { get } from '@/api'
 import { renderWithRouter, makeGuide } from '@/test-utils'
 
 vi.mock('@/api', () => ({ get: vi.fn() }))
-
 // C5 – fångar att sluggen från routen inte når API-anropet.
 it('loads the guide for the slug in the route', async () => {
   vi.mocked(get).mockResolvedValue(makeGuide())
@@ -25,8 +24,7 @@ it('shows an error instead of loading forever when the guide is missing', async 
   expect(screen.queryByText('Laddar...')).not.toBeInTheDocument()
 })
 
-// C7 – Debt 7 (#9): redaktionell HTML renderas orenad via v-html.
-// Rött tills body_html saneras (t.ex. DOMPurify). Committas före fixen (§7).
+// C7 – Debt 7 (#9): redaktionell HTML renderas orenad via v-html (lagrad XSS).
 it('strips event handlers from guide HTML', async () => {
   vi.mocked(get).mockResolvedValue(
     makeGuide({ body_html: '<p>Sveriges tak</p><img src="x" onerror="alert(1)">' }),

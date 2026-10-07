@@ -48,3 +48,14 @@ it('filters by region, ignoring case', async () => {
   expect(screen.getByText('Kebnekaise')).toBeInTheDocument()
   expect(screen.queryByText('Helags')).not.toBeInTheDocument()
 })
+
+// Debt 7 (#9): utdraget renderas också orenat via v-html (lagrad XSS).
+it('strips event handlers from the guide excerpt', async () => {
+  vi.mocked(get).mockResolvedValue([
+    makeGuide({ body_html: '<p>Sveriges tak</p><img src="x" onerror="alert(1)">' }),
+  ])
+  const { container } = await renderWithRouter(GuidesView)
+
+  expect(await screen.findByText('Sveriges tak')).toBeInTheDocument()
+  expect(container.querySelector('[onerror]')).toBeNull()
+})
