@@ -1,0 +1,29 @@
+# Mätning av turer – 2026-10-08 12:13
+commit: 991f872 (m3-databas-decision)
+
+## Postgres
+rader i tours:      200
+rader i tour_logs:  6053
+rader i photos:     266
+punkter per tur:    min 20 · snitt 30.3 · max 39
+största turen:      id 17 med 39 punkter
+
+## GET /api/tours
+turer i svaret:     50 (35 med guide)
+mätpunkter i svaret: 1523
+svarets storlek:    293479 bytes (286 kB)
+utan logs:          46244 bytes (45 kB) – det projektionen { logs: 0 } ungefär skickar
+andel som är logs:  84 %
+svarstid:           0.076928 s
+databasfrågor:      186 (1 + 3 × 50 + 35 guider, ur routes/tours.js)
+
+## Största turen som Mongo-dokument (mongo:smoke)
+Postgres: 1 rad i tours + 39 rader i tour_logs
+MongoDB:  1 dokument, 3.4 kB
+
+## Gränsen 16 MB
+per punkt:          0.087 kB
+max punkter/dokument: ~187934
+det motsvarar:      52 h med en punkt per sekund · 653 dygn med en var 5:e minut
+
+Logg: docs/decisions/matningar/tours-20261008-121340.log
