@@ -28,22 +28,47 @@ committa och deploya ofta och Git Flow är väl lämplig för det. Vi avser dock
 
 ## Kom igång
 
+Det finns två sätt. Båda kräver Docker.
+
+### A. Allt i Docker
+
+Kräver bara Docker, inte Node.
+
+```bash
+docker compose up --build -d
+docker compose exec api npm run seed
+```
+
+Har du Node installerat gör `npm start` samma sak som första raden och `npm stop`
+samma sak som `docker compose down` (med podman om Docker saknas).
+
+Compose startar fyra tjänster i bakgrunden: `postgres`, `mongo`, `api` och `client`.
+Vue-klienten ligger på http://localhost:3001 och API:et på http://localhost:4000.
+Seeden behövs bara första gången, eftersom datan ligger kvar i volymerna. Följ
+loggarna med `docker compose logs -f`. Stoppa med `docker compose down` (lägg till
+`-v` för att tömma databaserna).
+
+### B. Databaserna i Docker, appen på din dator
+
 Kräver **Node 22.18 eller senare**. API:et är delvis skrivet i TypeScript och körs
 direkt av Node, som tar bort typerna själv (inget byggsteg). CI kör Node 24.
 
 ```bash
 npm install
-docker compose -f docker-compose.dev.yml up -d
+npm run db:up      # docker compose up -d postgres mongo
 npm run seed
 npm run dev
 ```
 
-`npm run dev` startar API:et, React-appen och Vue-klienten samtidigt. React-appen
-ligger sen på http://localhost:3000, Vue-klienten på http://localhost:3001 och
-API:et på http://localhost:4000. Var för sig: `npm run dev:api`, `npm run dev:web`
-och `npm run dev:client`.
+`npm run dev` startar API:et, React-appen och Vue-klienten samtidigt med omladdning
+vid ändringar. React-appen ligger sen på http://localhost:3000, Vue-klienten på
+http://localhost:3001 och API:et på http://localhost:4000. Var för sig:
+`npm run dev:api`, `npm run dev:web` och `npm run dev:client`. Stoppa databaserna
+med `npm run db:down`.
 
-`npm start` finns fortfarande inte i roten använd `npm run dev`.
+API:et når databaserna på `localhost:5433` och `localhost:27017`, som är de portar
+compose publicerar på värden. Inne i compose (A) heter de i stället `postgres:5432`
+och `mongo:27017`.
 
 ## Kommandon
 
