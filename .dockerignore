@@ -1,0 +1,7 @@
+# Allt här skickas inte med i byggkontexten (context: . i compose.yml).
+# node_modules och dist byggs inne i imagen, .env innehåller lokala hemligheter.
+**/node_modules
+**/dist
+.git
+.env
+**/.env
