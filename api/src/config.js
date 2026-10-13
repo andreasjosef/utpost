@@ -2,7 +2,9 @@
 // M3: adresserna läses från miljön när den finns (compose sätter dem), annars gäller de gamla
 // localhost-värdena. Lösenorden ligger fortfarande i koden – det är en skuld som betalas i M6.
 export const config = {
-  databaseUrl: "postgres://utpost:utpost@localhost:5433/utpost",
+  databaseUrl:
+    process.env.DATABASE_URL ??
+    "postgres://utpost:utpost@localhost:5433/utpost",
   mongoUrl:
     process.env.MONGO_URL ??
     "mongodb://utpost:utpost@localhost:27017/utpost?authSource=admin",
