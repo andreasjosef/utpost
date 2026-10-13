@@ -11,7 +11,7 @@
   "scripts": {
     "start": "bash scripts/compose.sh up --build -d",
     "stop": "bash scripts/compose.sh down",
-    "dev": "concurrently -n api,web,client -c blue,green,magenta \"npm run dev --workspace=api\" \"npm run dev --workspace=web\" \"npm run dev --workspace=client\"",
+    "dev": "npm run db:up && concurrently -n api,web,client -c blue,green,magenta \"npm run dev --workspace=api\" \"npm run dev --workspace=web\" \"npm run dev --workspace=client\"",
     "dev:api": "npm run dev --workspace=api",
     "dev:web": "npm run dev --workspace=web",
     "dev:client": "npm run dev --workspace=client",
