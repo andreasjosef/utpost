@@ -60,9 +60,10 @@ npm run seed
 npm run dev
 ```
 
-`npm run dev` startar API:et, React-appen och Vue-klienten samtidigt med omladdning
-vid ändringar. React-appen ligger sen på http://localhost:3000, Vue-klienten på
-http://localhost:3001 och API:et på http://localhost:4000. Var för sig:
+`npm run dev` startar databaserna (om de inte redan kör) och sen API:et, React-appen
+och Vue-klienten samtidigt med omladdning vid ändringar. React-appen ligger sen på
+http://localhost:3000, Vue-klienten på http://localhost:3001 och API:et på
+http://localhost:4000. Var för sig:
 `npm run dev:api`, `npm run dev:web` och `npm run dev:client`. Stoppa databaserna
 med `npm run db:down`.
 
