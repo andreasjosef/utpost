@@ -2,7 +2,7 @@
 # Bara databaserna (och appen med npm run dev på din dator):  docker compose up -d postgres mongo
 # Portarna på värden (5433, 27017) matchar standardvärdena i api/src/config.js.
 services:
-  db:
+  postgres:
     image: postgres:16
     environment:
       POSTGRES_USER: utpost
@@ -56,5 +56,5 @@ services:
     depends_on:
       - api
 volumes:
-  pgdata:
+  utpost_pgdata:
   mongodata:
