@@ -7,6 +7,7 @@ import { authRouter } from "./routes/auth.js";
 import { guidesRouter } from "./routes/guides.ts";
 import { toursRouter } from "./routes/tours.js";
 import { photosRouter } from "./routes/photos.js";
+import { yoga } from "./graphql/server.js";
 
 const app = express();
 
@@ -36,6 +37,9 @@ app.use("/api/auth", authRouter);
 app.use("/api/guides", guidesRouter);
 app.use("/api/tours", toursRouter);
 app.use("/api/photos", photosRouter);
+
+// Med sökväg, annars svarar yoga på alla adresser och REST-routerna får 404.
+app.use(yoga.graphqlEndpoint, yoga);
 
 app.listen(config.port, () => {
   console.log(`API lyssnar på http://localhost:${config.port}`);
