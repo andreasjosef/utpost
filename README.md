@@ -43,10 +43,22 @@ Har du Node installerat gör `npm start` samma sak som första raden och `npm st
 samma sak som `docker compose down` (med podman om Docker saknas).
 
 Compose startar fyra tjänster i bakgrunden: `postgres`, `mongo`, `api` och `client`.
-Vue-klienten ligger på http://localhost:3001 och API:et på http://localhost:4000.
+Vue-klienten (nginx) ligger på http://localhost:3001. API:et har ingen egen publicerad port utan nås
+via nginx-proxyn i klienten: http://localhost:3001/api/health och GraphiQL på http://localhost:3001/graphql.
 Seeden behövs bara första gången, eftersom datan ligger kvar i volymerna. Följ
 loggarna med `docker compose logs -f`. Stoppa med `docker compose down` (lägg till
 `-v` för att tömma databaserna).
+
+### Docker-images och storlek (M4)
+
+Klienten byggs med multi-stage build (`client/Dockerfile`) där steg 1 bygger med Node och steg 2 serverar `dist/` via `nginx:1.27-alpine`:
+
+| Image | Bas / Metod | DISK USAGE | CONTENT SIZE |
+| --- | --- | --- | --- |
+| `client` (före M4) | `node:22-alpine` + Vite preview + node_modules | ~369 MB (539 MB) | ~131 MB |
+| `client` (efter M4) | `nginx:1.27-alpine` multi-stage | **~74 MB** | **21 MB** |
+
+Client-imagen minskade med ~80 % och ligger väl under gränsen på 100 MB.
 
 ### B. Databaserna i Docker, appen på din dator
 
@@ -87,9 +99,9 @@ Formatera koden lokalt med `npm run format --workspace=client`.
 
 ## Struktur
 
-- `api/` – Express + Postgres (Drizzle)
+- `api/` – Express + Postgres (Drizzle) + MongoDB (driver). REST under `/api` och GraphQL (graphql-yoga) på `/graphql`, med GraphiQL i webbläsaren på `GET /graphql` i utveckling (`api/src/graphql/`)
 - `web/` – React + Vite (den gamla appen, vyerna portas över till `client/`)
-- `client/` – Vue 3 + Vue Router + Pinia + Vite (den nya klienten, TypeScript)
+- `client/` – Vue 3 + Vue Router + Pinia + Vite (port 3001). Multi-stage build med Nginx serverar statiska filer och proxar `/api` och `/graphql` till `api:4000`.
 - `shared/` – `@utpost/shared`, API-kontraktet: typerna för det som går mellan `api/` och `client/`. Ren TypeScript, inget bygge. Ändras ett API-svar ändras typen här i samma PR.
 
 ## Deploy
