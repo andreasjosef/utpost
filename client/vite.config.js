@@ -9,6 +9,10 @@ export default defineConfig({
   plugins: [vue(), vueDevTools()],
   server: {
     port: 3001,
+    proxy: {
+      '/api': 'http://localhost:4000',
+      '/graphql': 'http://localhost:4000',
+    },
   },
   resolve: {
     alias: {
