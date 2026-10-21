@@ -18,7 +18,7 @@ Regler:
   - Minst **1** godkännande krävs, så ingen kan merga sin egen PR ensam.
   - Tillåtna merge-metoder: merge och squash.
 - **Require status checks to pass**
-  - Kräver: **`Quality`** och **`Build`** från GitHub Actions. Namnen är
+  - Kräver: **`Quality`**, **`Build`** och **`Image`** från GitHub Actions. Namnen är
     jobbens `name:` i `.github/workflows/ci.yml`.
   - **Require branches to be up to date before merging** är på – branchen måste
     vara uppdaterad mot `main` innan merge.
@@ -40,15 +40,22 @@ flowchart LR
       direction TB
       B1[npm ci] --> B2[npm run build] --> B3[ladda upp client/dist]
     end
+    subgraph IM [Image: körs efter Quality och Build]
+      direction TB
+      I1[bygg api- och client-image] --> I2{push till main?}
+      I2 -->|nej, PR| I3[bygg bara, publicera inte]
+      I2 -->|ja| I4[publicera i GHCR med taggen sha-7 tecken]
+    end
   end
 
   PR --> Q1
   PR --> B1
-  Q4 --> S{Ruleset på main:<br/>Quality + Build gröna?<br/>branch uppdaterad mot main?<br/>1 godkännande?}
-  B3 --> S
+  Q4 --> I1
+  B3 --> I1
+  I3 --> S{Ruleset på main:<br/>Quality + Build + Image gröna?<br/>branch uppdaterad mot main?<br/>1 godkännande?}
   S -->|nej| F[fixa, pusha igen] --> P
   S -->|ja| M[merge till main]
-  M --> MAIN[push till main kör CI igen]
+  M --> MAIN[push till main kör CI igen och publicerar imagerna]
 ```
 ## Vad varje steg fångar
 
@@ -61,6 +68,7 @@ flowchart LR
 | Test | Quality | `npm test` (Vitest) | Att testerna går igenom. Just nu finns bara ett röktest som visar att pipelinen faktiskt kör tester. Riktiga tester kommer i M2. |
 | Bygge | Build | `npm run build` (Vite) | Kod som inte går att bygga för produktion: importer som pekar på filer som inte finns, syntaxfel och komponenter som inte kompilerar. |
 | Artefakt | Build | `upload-artifact` | Fångar inga fel, men sparar det byggda `client/dist` så att man kan ladda ner och titta på exakt det som byggdes. |
+| Image | Image | `docker/build-push-action` (`api/Dockerfile`, `client/Dockerfile`) | Att Dockerfilerna faktiskt bygger: saknade filer i bygget, fel sökvägar i multi-stage-bygget och `npm ci` som bara fungerar på vår dator. På PR bygger jobbet utan att publicera. Vid push till `main` publiceras `…-api` och `…-client` i GHCR med taggen `sha-<7 tecken>`. Jobbet kör först när Quality och Build är gröna och är det enda som har `packages: write`. |
 
 Alla steg utom typkontrollen körs just nu bara mot `client/`. Typkontrollen täcker även `api/`. `web/` kontrolleras inte i CI.
 

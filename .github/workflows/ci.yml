@@ -28,3 +28,49 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           path: client/dist
+  image:
+    name: Image
+    runs-on: ubuntu-latest
+    needs: [quality, build] # ingen image av kod som inte klarat kontrollerna
+    permissions:
+      contents: read
+      packages: write # bara det här jobbet får publicera i GHCR
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      # Inloggning behövs bara när vi ska publicera, alltså vid push till main.
+      - uses: docker/login-action@v3
+        if: github.event_name == 'push'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # Namn och tagg: ghcr.io/<ägare>/<repo>-api:sha-1a2b3c4 (metadata-action gör namnet till gemener).
+      - id: meta-api
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}-api
+          tags: type=sha
+      - uses: docker/build-push-action@v6
+        with:
+          context: . # repots rot, som i compose.yml
+          file: api/Dockerfile
+          push: ${{ github.event_name == 'push' }}
+          tags: ${{ steps.meta-api.outputs.tags }}
+          labels: ${{ steps.meta-api.outputs.labels }}
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+      - id: meta-client
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}-client
+          tags: type=sha
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: client/Dockerfile
+          push: ${{ github.event_name == 'push' }}
+          tags: ${{ steps.meta-client.outputs.tags }}
+          labels: ${{ steps.meta-client.outputs.labels }}
+          cache-from: type=gha,scope=client
+          cache-to: type=gha,mode=max,scope=client
