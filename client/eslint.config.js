@@ -19,7 +19,13 @@ export default defineConfigWithVueTs(
     files: ["**/*.{vue,js,mjs,jsx,ts,mts}"],
   },
 
-  globalIgnores(["**/dist/**", "**/dist-ssr/**", "**/coverage/**"]),
+  // src/gql/ skrivs av codegen (npm run codegen) – ingen ändrar den för hand.
+  globalIgnores([
+    "**/dist/**",
+    "**/dist-ssr/**",
+    "**/coverage/**",
+    "src/gql/**",
+  ]),
 
   {
     languageOptions: {
