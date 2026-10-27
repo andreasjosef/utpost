@@ -104,6 +104,36 @@ Formatera koden lokalt med `npm run format --workspace=client`.
 - `client/` – Vue 3 + Vue Router + Pinia + Vite (port 3001). Multi-stage build med Nginx serverar statiska filer och proxar `/api` och `/graphql` till `api:4000`.
 - `shared/` – `@utpost/shared`, API-kontraktet: typerna för det som går mellan `api/` och `client/`. Ren TypeScript, inget bygge. Ändras ett API-svar ändras typen här i samma PR.
 
+## Mätning före/efter (M5)
+
+### N+1 i GraphQL
+
+Den tyngsta frågan är turlistan med exakt de fält som turlistan i klienten visar (`ToursView`):
+
+```graphql
+query Turer {
+  tours {
+    id
+    title
+    distanceM
+    startedAt
+    user { displayName }
+    guide { title slug }
+    photos { id }
+  }
+}
+```
+
+Mätt före DataLoader, med API:et startat från `main` mot seedad Postgres och frågan skickad med namn.
+Siffran kommer ur API-loggen (`graphql Turer: 135 databasfrågor`).
+
+| Fråga   | Databasfrågor före | Efter |
+| ------- | ------------------ | ----- |
+| `Turer` | 135                |       |
+
+135 = 1 (turerna) + 50 (`user`, en per tur) + 34 (`guide`, en per tur som har en guide) + 50 (`photos`, en per tur).
+Seeden slumpar om en tur har en guide (ca 75 %), så före-siffran varierar lite mellan databaser – formeln är densamma.
+
 ## Deploy
 
 Fråga Marcus. TODO: update
