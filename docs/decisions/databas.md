@@ -126,4 +126,13 @@ Regeln ovan avgör tabell för tabell:
 - **Ingen transaktion över databaserna.** Tas en användare bort i Postgres blir hens turer kvar i Mongo. Det kräver ett städsteg i koden, eftersom ingen främmande nyckel kan göra det.
 - **Molnet i M6:** två hanterade databaser (t.ex. Postgres hos molnleverantören och MongoDB Atlas), eller två containrar med beständiga volymer. Två hemligheter att rotera. Lösenorden som i dag står i `config.js` och `compose.yml` (kursens skuld 7) flyttas till molnets hemlighetshantering.
 
-**Skrivet av:** Joakim och Andreas 
+## Läget efter M5: loggarna är flyttade, resten av planen väntar
+
+M5 genomför den första delen av migreringen ovan, avgränsad till mätpunkterna:
+
+- **Gjort:** `npm run migrate:logs` (`api/src/db/migrate-logs.js`) skriver ett dokument per tur i `tours` med `logs` inbäddat och `stats.points`, med `replaceOne` + upsert på `tour_id` (unikt index). Skriptet verifierar själv genom att räkna (dokument mot turer, summan av mätpunkterna mot `tour_logs`) och avslutar med felkod om något inte stämmer. Dokument vars tur inte längre finns i Postgres tas bort, så att skriptet tål en ny seed.
+- **GraphQL läser Mongo:** `Tour.logs` går via en DataLoader mot `tours` i MongoDB. Allt annat i GraphQL läser fortfarande Postgres.
+- **`tour_logs` ligger kvar i Postgres och är källan.** MongoDB är en spegel som skrivs av `npm run migrate:logs`. REST-routerna (`/api/tours`, `/api/tours/:id`) och den gamla klienten i `web/` läser fortfarande tabellen, och migreringen behöver den som källa och för att verifiera. Läggs mätpunkter till i Postgres syns de i GraphQL först när skriptet körts igen – det går bra så länge inget skriver mätpunkter (ingen route gör det i dag).
+- **Inte gjort än, ur planen ovan:** fotona inbäddade, resten av `stats` (punkt 1), REST-routerna mot Mongo (punkt 4), indexen på `started_at` och `user_id`, och att ta bort tabellerna (punkt 5). `tour_logs` tas bort först när REST-routerna för turer läser Mongo. Det förs upp i `docs/debt.md`.
+
+**Skrivet av:** Joakim och Andreas. Avsnittet om M5: Mirko. 

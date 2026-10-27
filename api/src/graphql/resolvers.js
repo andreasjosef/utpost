@@ -69,8 +69,9 @@ export const resolvers = {
     // password_hash finns på raden men inte i schemat – då går den inte att fråga efter.
   },
 
+  // Mätpunkterna kommer från MongoDB-dokumentet (M5): tidpunkten heter t.
   LogPoint: {
-    recordedAt: (log) => iso(log.recorded_at),
+    recordedAt: (log) => iso(log.t),
     elevationM: (log) => log.elevation_m,
     heartRate: (log) => log.heart_rate,
   },

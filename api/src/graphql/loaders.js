@@ -22,7 +22,7 @@ const groupBy = (rows, key, ids) => {
   return ids.map((id) => map.get(id) ?? []);
 };
 
-export const createLoaders = ({ query }) => ({
+export const createLoaders = ({ query, mongoFind }) => ({
   // Tour.user: 50 turer → EN fråga, inte 50
   user: new DataLoader(async (ids) =>
     byId(
@@ -49,17 +49,16 @@ export const createLoaders = ({ query }) => ({
       tourIds,
     ),
   ),
-  // Tour.logs: läser fortfarande tour_logs i Postgres. Flyttas till MongoDB i steg 3.
-  logs: new DataLoader(async (tourIds) =>
-    groupBy(
-      (
-        await query(
-          "select * from tour_logs where tour_id = any($1) order by recorded_at",
-          [tourIds],
-        )
-      ).rows,
-      "tour_id",
-      tourIds,
-    ),
-  ),
+  // Tour.logs: mätpunkterna ligger i MongoDB sedan M5 (ett dokument per tur, logs inbäddat,
+  // redan i tidsordning). Samma mönster: en fråga för alla turer i svaret.
+  // Tour.id är ett tal från Postgres; dokumentets tour_id är också ett tal.
+  logs: new DataLoader(async (tourIds) => {
+    const docs = await mongoFind(
+      "tours",
+      { tour_id: { $in: tourIds } },
+      { tour_id: 1, logs: 1 },
+    );
+    const map = new Map(docs.map((d) => [d.tour_id, d.logs]));
+    return tourIds.map((id) => map.get(id) ?? []);
+  }),
 });
