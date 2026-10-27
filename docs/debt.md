@@ -33,6 +33,7 @@ bromsar varje ändring. Låg = stör men kostar lite.
 | 22 | `express` är en major-version efter | `api/package.json` rad 14 (`"express": "^4.21.2"`, senaste är 5.x) | Ingen akut sårbarhet känd, men uppgraderingen blir bara dyrare ju längre den skjuts upp. | Låg |
 | 23 | Upprepade magiska värden i CSS istället för delade tokens | `web/src/style.css`, t.ex. `box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08)` upprepat på rad 21, 30, 34, 45, 50 | Kosmetiskt, men varje visuell justering (t.ex. skuggans styrka) kräver sök-och-ersätt över hela filen istället för att ändras på ett ställe. | Låg |
 | 24 | Hela kodbasen är JavaScript, ingen TypeScript | Genomgående i `api/` och `web/` | Ingen kompileringstidskontroll av formen på objekt som skickas mellan lager (t.ex. `user`, `guide`, `tour`), vilket gör punkter som 1, 5 och 20 lättare att missa i granskning. | Låg |
+| 25 | Turloggarna finns i två databaser (tillkom i M5) | `tour_logs` i Postgres (läses av `api/src/routes/tours.js`) och collectionen `tours` i MongoDB (läses av GraphQL, `api/src/graphql/loaders.js`), synkade av `npm run migrate:logs` | Postgres är källan och Mongo en spegel. Skrivs mätpunkter till Postgres syns de inte i GraphQL förrän skriptet körts igen. Tabellen kan tas bort först när REST-routerna för turer läser Mongo (punkt 4–5 i `docs/decisions/databas.md`). | Medel |
 
 ## Mest brådskande
 

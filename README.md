@@ -37,6 +37,7 @@ Kräver bara Docker, inte Node.
 ```bash
 docker compose up --build -d
 docker compose exec api npm run seed
+docker compose exec api npm run migrate:logs
 ```
 
 Har du Node installerat gör `npm start` samma sak som första raden och `npm stop`
@@ -45,7 +46,7 @@ samma sak som `docker compose down` (med podman om Docker saknas).
 Compose startar fyra tjänster i bakgrunden: `postgres`, `mongo`, `api` och `client`.
 Vue-klienten (nginx) ligger på http://localhost:3001. API:et har ingen egen publicerad port utan nås
 via nginx-proxyn i klienten: http://localhost:3001/api/health och GraphiQL på http://localhost:3001/graphql.
-Seeden behövs bara första gången, eftersom datan ligger kvar i volymerna. Följ
+Seeden och migreringen behövs bara första gången, eftersom datan ligger kvar i volymerna. Följ
 loggarna med `docker compose logs -f`. Stoppa med `docker compose down` (lägg till
 `-v` för att tömma databaserna).
 
@@ -69,6 +70,7 @@ direkt av Node, som tar bort typerna själv (inget byggsteg). CI kör Node 24.
 npm install
 npm run db:up      # docker compose up -d postgres mongo
 npm run seed
+npm run migrate:logs # turloggarna till MongoDB (M5), kör igen efter varje seed
 npm run dev
 ```
 
@@ -129,10 +131,38 @@ Siffran kommer ur API-loggen (`graphql Turer: 135 databasfrågor`).
 
 | Fråga   | Databasfrågor före | Efter |
 | ------- | ------------------ | ----- |
-| `Turer` | 135                |       |
+| `Turer` | 135                | 4     |
 
 135 = 1 (turerna) + 50 (`user`, en per tur) + 34 (`guide`, en per tur som har en guide) + 50 (`photos`, en per tur).
 Seeden slumpar om en tur har en guide (ca 75 %), så före-siffran varierar lite mellan databaser – formeln är densamma.
+
+4 = 1 (turerna) + 1 per relation (`user`, `guide`, `photos`), med DataLoader i `api/src/graphql/loaders.js`.
+Efter-siffran står i svaret under `extensions.databasfragor` (GraphiQL, nätverksfliken) och i API-loggen
+(`graphql Turer: 4 databasfrågor`). Den är densamma oavsett hur många turer som har en guide.
+
+### Migreringen av turloggarna
+
+`npm run migrate:logs` skriver ett dokument per tur i MongoDB med mätpunkterna inbäddade i `logs`,
+och räknar efteråt. `Tour.logs` i GraphQL läser sedan Mongo via loadern. Mongo-anropet räknas i
+`extensions.databasfragor` precis som en Postgres-fråga (`tours { id logs { recordedAt } }` kostar 2).
+
+Första körningen:
+
+```
+Postgres: 200 turer, 5909 mätpunkter i tour_logs
+MongoDB:  200 skapade, 0 ersatta, 0 borttagna föräldralösa
+Kontroll: dokument 200/200, mätpunkter 5909/5909, stats.points 5909/5909
+Verifierat
+```
+
+Andra körningen – inget nytt skapas:
+
+```
+Postgres: 200 turer, 5909 mätpunkter i tour_logs
+MongoDB:  0 skapade, 200 ersatta, 0 borttagna föräldralösa
+Kontroll: dokument 200/200, mätpunkter 5909/5909, stats.points 5909/5909
+Verifierat
+```
 
 ## Deploy
 
