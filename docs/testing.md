@@ -52,7 +52,7 @@ Vi behövde bestämma vad som ska testas, på vilken nivå, och vad vi medvetet 
 
 ## Regler
 
-- **En PR mergas bara när** `Quality` och `Build` är gröna (lint, format, typkontroll, tester, bygge) och en annan person har godkänt den.
+- **En PR mergas bara när** `Quality`, `Build`, `Integration` och `Image` är gröna (lint, format, typkontroll, klientens tester, bygge, integrationstester mot riktiga databaser, Docker-images) och en annan person har godkänt den.
 - **En buggfix** börjar med ett test som är rött, i en egen commit, följt av fixen i nästa commit. Skuldnumret står i testnamnet eller en kommentar, t.ex. `// Debt 7 (#9)`.
 - **Vyer som hämtar via GraphQL (M5) mockar** `vi.mock('@urql/vue')`: `useQuery` svarar med färdiga refs, och testdatan typas med den genererade frågetypen (t.ex. `TurerQuery` ur `src/gql/`), så att en ändring i schemat eller frågan bryter testdatan i typkontrollen.
 - **Vyer som fortfarande hämtar via REST mockar API:et genom** `vi.mock('@/api')`. `get`/`post` ersätts med `vi.fn()` och testdatan typas med typerna från `@utpost/shared`, så att en ändring i kontraktet bryter testdatan i typkontrollen. Bara testet av `api.ts` självt stubbar `fetch`.
@@ -107,5 +107,7 @@ Senaste körningen av `npm run test:api` lokalt (M5):
       Tests  6 passed (6)
    Duration  544ms
 ```
+
+I pipelinen (jobbet Integration, PR #71): 6 tester gröna, `Duration 889ms`. Hela jobbet tog 38 s, varav 20 s att starta databaserna – se [`docs/pipeline.md`](pipeline.md).
 
 Regressionstestet för N+1 heter `Turer kostar en databasfråga per relation, inte per tur`. Med loadern för `Tour.user` bortkopplad blev det rött: `expected 53 to be 4`.

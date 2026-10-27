@@ -28,10 +28,56 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           path: client/dist
+  # M5: integrationstesterna i api/ mot riktiga databaser. Postgres och Mongo startas som
+  # services för jobbet och nås på localhost (inte postgres/mongo som i compose, och 5432 –
+  # inte 5433 som på din dator). De är tomma tills seed och migrate:logs har körts.
+  integration:
+    name: Integration
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16 # samma som compose.yml
+        env:
+          POSTGRES_USER: utpost
+          POSTGRES_PASSWORD: utpost
+          POSTGRES_DB: utpost
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U utpost -d utpost"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+      mongo:
+        image: mongo:8.2 # samma som compose.yml
+        env:
+          MONGO_INITDB_ROOT_USERNAME: utpost
+          MONGO_INITDB_ROOT_PASSWORD: utpost
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok'"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      # Samma variabler som compose sätter för api – men här är databaserna på localhost.
+      DATABASE_URL: postgres://utpost:utpost@localhost:5432/utpost
+      MONGO_URL: mongodb://utpost:utpost@localhost:27017/utpost?authSource=admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - run: npm run seed # tomma tabeller → testdata, exakt som lokalt
+      - run: npm run migrate:logs # mätpunkterna till Mongo, och avslutar med felkod om antalen inte stämmer
+      - run: npm run test:api
   image:
     name: Image
     runs-on: ubuntu-latest
-    needs: [quality, build] # ingen image av kod som inte klarat kontrollerna
+    # Ingen image av kod som inte klarat kontrollerna – och inte av ett API vars
+    # integrationstester är röda: imagen är precis det som testerna testar.
+    needs: [quality, build, integration]
     permissions:
       contents: read
       packages: write # bara det här jobbet får publicera i GHCR
