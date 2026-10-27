@@ -129,10 +129,14 @@ Siffran kommer ur API-loggen (`graphql Turer: 135 databasfrågor`).
 
 | Fråga   | Databasfrågor före | Efter |
 | ------- | ------------------ | ----- |
-| `Turer` | 135                |       |
+| `Turer` | 135                | 4     |
 
 135 = 1 (turerna) + 50 (`user`, en per tur) + 34 (`guide`, en per tur som har en guide) + 50 (`photos`, en per tur).
 Seeden slumpar om en tur har en guide (ca 75 %), så före-siffran varierar lite mellan databaser – formeln är densamma.
+
+4 = 1 (turerna) + 1 per relation (`user`, `guide`, `photos`), med DataLoader i `api/src/graphql/loaders.js`.
+Efter-siffran står i svaret under `extensions.databasfragor` (GraphiQL, nätverksfliken) och i API-loggen
+(`graphql Turer: 4 databasfrågor`). Den är densamma oavsett hur många turer som har en guide.
 
 ## Deploy
 
