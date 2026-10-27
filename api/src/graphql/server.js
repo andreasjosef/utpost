@@ -3,6 +3,7 @@ import { createSchema, createYoga } from "graphql-yoga";
 import jwt from "jsonwebtoken";
 import { config } from "../config.js";
 import { pool } from "../db/client.js";
+import { mongo, mongoDb } from "../db/mongo.js";
 import { typeDefs } from "./schema.js";
 import { resolvers } from "./resolvers.js";
 import { createLoaders } from "./loaders.js";
@@ -51,12 +52,22 @@ export const yoga = createYoga({
       stats.queries += 1;
       return pool.query(sql, params);
     };
+    // Räknas i samma siffra som Postgres: databasfragor = antal gånger vi gick till en databas.
+    const mongoFind = async (collection, filter, projection) => {
+      stats.queries += 1;
+      await mongo.connect(); // gör inget om klienten redan är ansluten
+      return mongoDb()
+        .collection(collection)
+        .find(filter, { projection })
+        .toArray();
+    };
     return {
       user: userFrom(request),
       stats,
       query,
+      mongoFind,
       // Loaders skapas PER ANROP. Två fält i samma anrop delar cache, två anrop gör det inte.
-      loaders: createLoaders({ query }),
+      loaders: createLoaders({ query, mongoFind }),
     };
   },
 });

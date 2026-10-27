@@ -23,7 +23,8 @@
     "db:up": "bash scripts/compose.sh up -d postgres mongo",
     "db:down": "bash scripts/compose.sh down",
     "typecheck": "npm run typecheck --workspace=client && npm run typecheck --workspace=api",
-    "mongo:smoke": "npm run mongo:smoke --workspace=api"
+    "mongo:smoke": "npm run mongo:smoke --workspace=api",
+    "migrate:logs": "npm run migrate:logs --workspace=api"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

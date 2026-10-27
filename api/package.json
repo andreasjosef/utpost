@@ -8,7 +8,8 @@
     "start": "node src/index.js",
     "seed": "node src/db/seed.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "mongo:smoke": "node src/db/mongo-smoke.js"
+    "mongo:smoke": "node src/db/mongo-smoke.js",
+    "migrate:logs": "node src/db/migrate-logs.js"
   },
   "dependencies": {
     "@utpost/shared": "*",
