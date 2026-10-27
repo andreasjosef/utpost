@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { gql } from '../graphql'
+import { useQuery } from '@urql/vue'
+import { graphql } from '../gql'
 
 // Startsidan i React-klienten (web/src/pages/Home.jsx) gör fem REST-anrop och använder
 // en bråkdel av svaren – skuld 6. Här är samma sida med EN fråga som ber om exakt de fält
 // som mallen nedan visar.
-const HOME_QUERY = /* GraphQL */ `
+// M5: frågan står i graphql(`…`) så att codegen ser den, och typen på svaret genereras ur
+// schemat. Ta bort ett fält ur frågan som mallen använder, och npm run typecheck blir rött.
+const HomeDocument = graphql(/* GraphQL */ `
   query Home {
     guides {
       slug
@@ -26,37 +28,16 @@ const HOME_QUERY = /* GraphQL */ `
       distanceM
     }
   }
-`
+`)
 
-interface GuideSummary {
-  slug: string
-  title: string
-  region: string
-  difficulty: string
-  lengthKm: number
-}
-interface HomeData {
-  guides: GuideSummary[]
-  popularGuides: Pick<GuideSummary, 'slug' | 'title' | 'region'>[]
-  regions: string[]
-  tours: { id: string; title: string; distanceM: number }[]
-}
-
-const data = ref<HomeData | null>(null)
-const error = ref<string | null>(null)
-
-onMounted(async () => {
-  try {
-    data.value = await gql<HomeData>(HOME_QUERY)
-  } catch (err) {
-    error.value = (err as Error).message
-  }
-})
+// useQuery kör frågan när vyn skapas och ger tre refs: data, fetching och error.
+// Nästa gång vyn visas svarar cachen (urql.ts) – inget nätverksanrop.
+const { data, fetching, error } = useQuery({ query: HomeDocument })
 </script>
 
 <template>
-  <p v-if="error" role="alert">Kunde inte hämta startsidan: {{ error }}</p>
-  <p v-else-if="!data">Laddar…</p>
+  <p v-if="error" role="alert">Kunde inte hämta startsidan: {{ error.message }}</p>
+  <p v-else-if="fetching || !data">Laddar…</p>
   <div v-else>
     <section class="hero">
       <h1>Hitta din nästa tur</h1>

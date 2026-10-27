@@ -93,7 +93,7 @@ Körs från roten. Alla fem körs även i CI (se [`docs/pipeline.md`](docs/pipel
 | --- | --- |
 | `npm run lint` | ESLint på `client/` |
 | `npm run format:check` | Prettier kollar formateringen i `client/src/` (ändrar inget) |
-| `npm run typecheck` | Typkontroll: `vue-tsc` i `client/` och `tsc --noEmit` i `api/` (ändrar inget) |
+| `npm run typecheck` | Codegen skriver `client/src/gql/` ur schemat, sen typkontroll: `vue-tsc` i `client/` och `tsc --noEmit` i `api/` |
 | `npm test` | Vitest kör testerna i `client/` en gång och avslutar |
 | `npm run build` | Vite bygger `client/` till `client/dist` |
 
@@ -162,6 +162,47 @@ Postgres: 200 turer, 5909 mätpunkter i tour_logs
 MongoDB:  0 skapade, 200 ersatta, 0 borttagna föräldralösa
 Kontroll: dokument 200/200, mätpunkter 5909/5909, stats.points 5909/5909
 Verifierat
+```
+
+### urql och dokumentcachen
+
+Nätverksfliken, med Vue-klienten mot API:et lokalt: första besöket på startsidan ger 1 `POST /graphql`
+(`Home`) och första besöket på Turer ger 1 (`Turer`). Går man sedan till startsidan och tillbaka till
+Turer blir det **0** nya `POST /graphql` – båda svaren kommer ur urqls `cacheExchange`. API-loggen
+visade samma sak: en rad per fråga och sidladdning, ingen när man klickade fram och tillbaka.
+En omladdning av sidan tömmer cachen.
+
+### Codegen stoppar ett borttaget fält
+
+Provat på en branch som slängdes efteråt. `displayName` togs bort ur `type User` i
+`api/src/graphql/schema.js`, och `npm run typecheck` (som kör codegen först) stannade med:
+
+```
+Error 0: Cannot query field "displayName" on type "User".
+  at client/src/views/ToursView.vue:9:9
+```
+
+Andra brottet i kedjan: `distanceM` togs bort ur frågan `Turer` men inte ur mallen. Då stannar `vue-tsc`:
+
+```
+src/views/ToursView.vue(55,34): error TS2339: Property 'distanceM' does not exist on type '{ id: string; title: string; startedAt: string; ... }'.
+```
+
+Testdatan i `ToursView.test.ts` är typad efter den genererade `TurerQuery`, så samma ändring gav också
+ett fel i testet (`TS2353 … 'distanceM' does not exist`).
+
+### Vyerna via useQuery
+
+| Vy | Fråga | Test |
+| --- | --- | --- |
+| `HomeView` (startsidan) | `Home` | `HomeView.test.ts`, 2 tester |
+| `ToursView` (turlistan) | `Turer` – samma fråga som mäts ovan | `ToursView.test.ts`, 4 tester |
+
+Båda mockar `useQuery` från `@urql/vue`. `npm test`:
+
+```
+ Test Files  8 passed (8)
+      Tests  19 passed (19)
 ```
 
 ## Deploy
