@@ -20,7 +20,7 @@ Regler:
 - **Require status checks to pass**
   - Kräver: **`Quality`**, **`Build`**, **`Integration`** och **`Image`** från GitHub Actions.
     Namnen är jobbens `name:` i `.github/workflows/ci.yml`. `Integration` lades till i M5.
-  - Kontrollerat 2026-10-27 med `gh api repos/andreasjosef/utpost/rulesets/23657261`:
+  - Kontrollerat 2026-10-27 med `gh api repos/utpost-team/utpost/rulesets/23657261`:
 
     ```
     enforcement=active bypass=0
@@ -118,7 +118,7 @@ Lint, format, `npm test` och bygget körs mot `client/`. Typkontrollen täcker �
 
 ### Integration (M5)
 
-Första körningen, på PR #71 ([körning 40520539592](https://github.com/andreasjosef/utpost/actions/runs/40520539592)):
+Första körningen, på PR #71 ([körning 40520539592](https://github.com/utpost-team/utpost/actions/runs/40520539592)):
 **38 s** för hela jobbet. Mer än hälften är att starta databaserna; själva testerna tar under en sekund.
 
 ```bash
@@ -137,6 +137,33 @@ Första körningen, på PR #71 ([körning 40520539592](https://github.com/andrea
 0s      Complete job
 ```
 
-Integration körs parallellt med Quality och Build, så den gör inte PR:en långsammare än förut –
-men Image väntar nu på den. Tiden på `main` fylls i efter merge.
+På `main`, efter merge av #71 ([körning 40522832144](https://github.com/utpost-team/utpost/actions/runs/40522832144),
+commit `e25079c`): **46 s**, alla fyra jobben gröna.
+
+```bash
+== Integration 46s (main, e25079c)
+0s      Set up job
+25s     Initialize containers
+0s      Run actions/checkout@v4
+5s      Run actions/setup-node@v4
+7s      Run npm ci
+1s      Run npm run seed
+0s      Run npm run migrate:logs
+2s      Run npm run test:api
+0s      Post Run actions/setup-node@v4
+0s      Post Run actions/checkout@v4
+3s      Stop containers
+0s      Complete job
+```
+
+| Jobb | PR #71 | `main` (`e25079c`) |
+| --- | --- | --- |
+| Quality | 41 s | 31 s |
+| Build | 23 s | 21 s |
+| **Integration** | **38 s** | **46 s** |
+| Image | 31 s | 25 s |
+
+Skillnaden i Integration är nästan bara containerstarten (20 s mot 25 s) och `setup-node` (cachen).
+Integration körs parallellt med Quality och Build, så den gör inte PR:en mycket långsammare –
+men Image väntar nu på den. På `main` var Integration sist klar av de tre, på PR #71 var det Quality.
 
