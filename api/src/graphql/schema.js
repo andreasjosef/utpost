@@ -14,7 +14,7 @@ export const typeDefs = /* GraphQL */ `
 
   type User {
     id: ID!
-    displayName: String!
+
   }
 
   type Photo {
