@@ -18,11 +18,17 @@ Regler:
   - Minst **1** godkännande krävs, så ingen kan merga sin egen PR ensam.
   - Tillåtna merge-metoder: merge och squash.
 - **Require status checks to pass**
-  - Kräver: **`Quality`**, **`Build`** och **`Image`** från GitHub Actions. Namnen är
-    jobbens `name:` i `.github/workflows/ci.yml`.
-  - **M5:** **`Integration`** ska läggas till som krav bredvid de tre. Jobbet körs redan på varje
-    PR, men det är rulesetet som gör att en röd Integration stoppar merge. Kräver admin på repot.
-    <!-- TODO M5 steg 7: ersätt med den bekräftade listan när Integration är tillagd. -->
+  - Kräver: **`Quality`**, **`Build`**, **`Integration`** och **`Image`** från GitHub Actions.
+    Namnen är jobbens `name:` i `.github/workflows/ci.yml`. `Integration` lades till i M5.
+  - Kontrollerat 2026-10-27 med `gh api repos/andreasjosef/utpost/rulesets/23657261`:
+
+    ```
+    enforcement=active bypass=0
+    strict=true checks=Quality, Build, Integration, Image
+    approvals=1
+    ```
+
+    På PR #71 visar `gh pr checks 71 --required` alla fyra som required och gröna.
 
   - **Require branches to be up to date before merging** är på – branchen måste
     vara uppdaterad mot `main` innan merge.
