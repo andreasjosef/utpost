@@ -9,7 +9,8 @@
     "seed": "node src/db/seed.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "mongo:smoke": "node src/db/mongo-smoke.js",
-    "migrate:logs": "node src/db/migrate-logs.js"
+    "migrate:logs": "node src/db/migrate-logs.js",
+    "test": "vitest run"
   },
   "dependencies": {
     "@utpost/shared": "*",
@@ -29,6 +30,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.20.4",
     "@types/pg": "^8.23.1",
-    "typescript": "~6.0.0"
+    "typescript": "~6.0.0",
+    "vitest": "^3.2.7"
   }
 }

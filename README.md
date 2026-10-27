@@ -140,6 +140,19 @@ Seeden slumpar om en tur har en guide (ca 75 %), så före-siffran varierar lite
 Efter-siffran står i svaret under `extensions.databasfragor` (GraphiQL, nätverksfliken) och i API-loggen
 (`graphql Turer: 4 databasfrågor`). Den är densamma oavsett hur många turer som har en guide.
 
+### Integrationstesterna mot API:et
+
+`npm run test:api` kör 6 tester i `api/src/graphql/server.test.js` mot riktiga Postgres och MongoDB
+(antal och tid i [`docs/testing.md`](docs/testing.md)). Regressionstestet för N+1 heter
+**`Turer kostar en databasfråga per relation, inte per tur`** och kräver exakt `databasfragor === 4`.
+Med loadern för `Tour.user` bortkopplad (en fråga per tur igen) blev det rött:
+
+```
+AssertionError: expected 53 to be 4
+```
+
+53 = 1 (turerna) + 50 (`user`, en per tur) + 1 (`guide`) + 1 (`photos`).
+
 ### Migreringen av turloggarna
 
 `npm run migrate:logs` skriver ett dokument per tur i MongoDB med mätpunkterna inbäddade i `logs`,

@@ -19,6 +19,7 @@
     "lint": "npm run lint --workspace=client",
     "format:check": "npm run format:check --workspace=client",
     "test": "npm run test --workspace=client",
+    "test:api": "npm run test --workspace=api",
     "build": "npm run build --workspace=client",
     "db:up": "bash scripts/compose.sh up -d postgres mongo",
     "db:down": "bash scripts/compose.sh down",
